@@ -1,97 +1,70 @@
 import { useState } from 'react';
+import Filter from './Filter';
+import PersonForm from './PersonForm';
+import Persons from './Persons';
 
 const App = () => {
-  // Initial persons list with some entries
   const [persons, setPersons] = useState([
     { name: 'Arto Hellas', number: '040-123456', id: 1 },
     { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
     { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
     { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 },
   ]);
-  
-  const [newName, setNewName] = useState(''); // To store the new name input
-  const [newNumber, setNewNumber] = useState(''); // To store the new number input
-  const [searchTerm, setSearchTerm] = useState(''); // To store the search term
 
-  // Handle the change in the name input field
-  const handleNameChange = (event) => {
-    setNewName(event.target.value); // Update newName state
-  };
+  const [newName, setNewName] = useState('');
+  const [newNumber, setNewNumber] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Handle the change in the number input field
-  const handleNumberChange = (event) => {
-    setNewNumber(event.target.value); // Update newNumber state
-  };
+  const handleNameChange = (event) => setNewName(event.target.value);
+  const handleNumberChange = (event) => setNewNumber(event.target.value);
 
-  // Handle search input change
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value.toLowerCase()); // Update searchTerm (make it lowercase for case-insensitive search)
-  };
+  const handleSearchChange = (event) => setSearchTerm(event.target.value.toLowerCase());
 
-  // Handle form submission
   const handleSubmit = (event) => {
-    event.preventDefault(); // Prevent page reload on form submit
+    event.preventDefault();
 
-    // Check if the name already exists in the phonebook
     if (persons.some((person) => person.name === newName)) {
-      alert(`${newName} is already added to phonebook`); // Alert if duplicate name
-      return; // Stop the function execution if name exists
+      alert(`${newName} is already added to phonebook`);
+      return;
     }
 
-    // If name doesn't exist, add new entry to the phonebook
     const newPerson = {
       name: newName,
       number: newNumber,
-      id: persons.length + 1, // Assign a new id based on length of the array
+      id: persons.length + 1,
     };
-    setPersons([...persons, newPerson]); // Update persons state with the new person
-
-    // Clear the input fields after submission
+    setPersons([...persons, newPerson]);
     setNewName('');
     setNewNumber('');
   };
 
-  // Filter the persons list based on the search term (case-insensitive)
   const filteredPersons = persons.filter((person) =>
-    person.name.toLowerCase().includes(searchTerm) // Compare names in a case-insensitive manner
+    person.name.toLowerCase().includes(searchTerm)
   );
 
   return (
     <div>
       <h2>Phonebook</h2>
 
-      {/* Search field */}
-      <div>
-        filter shown with: <input value={searchTerm} onChange={handleSearchChange} />
-      </div>
+      <Filter searchTerm={searchTerm} handleSearchChange={handleSearchChange} />
 
-      {/* Add person form */}
-      <form onSubmit={handleSubmit}>
-        <div>
-          name: <input value={newName} onChange={handleNameChange} />
-        </div>
-        <div>
-          number: <input value={newNumber} onChange={handleNumberChange} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
+      <h3>Add a new</h3>
+      <PersonForm
+        newName={newName}
+        newNumber={newNumber}
+        handleNameChange={handleNameChange}
+        handleNumberChange={handleNumberChange}
+        handleSubmit={handleSubmit}
+      />
 
-      <h2>Numbers</h2>
-      <div>
-        {/* Display filtered persons */}
-        {filteredPersons.map((person) => (
-          <p key={person.id}>
-            {person.name} {person.number}
-          </p>
-        ))}
-      </div>
+      <h3>Numbers</h3>
+      <Persons persons={filteredPersons} />
     </div>
   );
 };
 
 export default App;
+
 
 
 
