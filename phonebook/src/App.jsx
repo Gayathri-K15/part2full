@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Filter from './Filter';
-import personForm from './personForm';
-import persons from './persons';
+import PersonForm from './PersonForm';
+import Persons from './Persons';
 
 const App = () => {
   const [persons, setPersons] = useState([
@@ -64,6 +64,7 @@ const App = () => {
 };
 
 export default App;
+
 
 
 
