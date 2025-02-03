@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import Filter from './Filter';
-import PersonForm from './PersonForm';
-import Persons from './Persons';
-
-
+import Filter from './components/Filter';
+import PersonForm from './components/PersonForm';
+import Persons from './components/Persons';
 
 const App = () => {
   const [persons, setPersons] = useState([
@@ -12,50 +10,42 @@ const App = () => {
     { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
     { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 },
   ]);
+  
+  const [newName, setNewName] = useState('');
+  const [newNumber, setNewNumber] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const [newName, setNewName] = useState(''); // State for the new name
-  const [newNumber, setNewNumber] = useState(''); // State for the new phone number
-  const [searchTerm, setSearchTerm] = useState(''); // State for the search filter
-
-  // Handle name input change
   const handleNameChange = (event) => {
-    setNewName(event.target.value); // Update the newName state
+    setNewName(event.target.value);
   };
 
-  // Handle phone number input change
   const handleNumberChange = (event) => {
-    setNewNumber(event.target.value); // Update the newNumber state
+    setNewNumber(event.target.value);
   };
 
-  // Handle the search input change
   const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value.toLowerCase()); // Update the searchTerm state (case-insensitive)
+    setSearchTerm(event.target.value.toLowerCase());
   };
 
-  // Handle form submission
   const handleSubmit = (event) => {
-    event.preventDefault(); // Prevent default form submission behavior
+    event.preventDefault();
 
-    // Check if the name already exists in the phonebook
     if (persons.some((person) => person.name === newName)) {
       alert(`${newName} is already added to phonebook`);
-      return; // Prevent adding duplicate names
+      return;
     }
 
-    // Add the new person to the phonebook
     const newPerson = {
       name: newName,
       number: newNumber,
-      id: persons.length + 1, // Create a new id based on the array length
+      id: persons.length + 1,
     };
     setPersons([...persons, newPerson]);
 
-    // Clear the input fields
     setNewName('');
     setNewNumber('');
   };
 
-  // Filter persons based on the search term (case-insensitive)
   const filteredPersons = persons.filter((person) =>
     person.name.toLowerCase().includes(searchTerm)
   );
@@ -63,44 +53,22 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-
-      {/* Filter input field */}
-      <div>
-        filter shown with: <input value={searchTerm} onChange={handleSearchChange} />
-      </div>
-
-      {/* Add new person form */}
+      
+      <Filter searchTerm={searchTerm} handleSearchChange={handleSearchChange} />
+      
       <h3>Add a new</h3>
-      <form onSubmit={handleSubmit}>
-        <div>
-          name: <input value={newName} onChange={handleNameChange} />
-        </div>
-        <div>
-          number: <input value={newNumber} onChange={handleNumberChange} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-
-      {/* Display filtered phonebook entries */}
+      <PersonForm 
+        newName={newName} 
+        newNumber={newNumber} 
+        handleNameChange={handleNameChange} 
+        handleNumberChange={handleNumberChange} 
+        handleSubmit={handleSubmit}
+      />
+      
       <h3>Numbers</h3>
-      <div>
-        {filteredPersons.map((person) => (
-          <p key={person.id}>
-            {person.name} {person.number}
-          </p>
-        ))}
-      </div>
+      <Persons persons={filteredPersons} />
     </div>
   );
 };
 
 export default App;
-
-
-
-
-
-
-
