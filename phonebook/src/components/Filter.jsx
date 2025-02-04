@@ -8,3 +8,4 @@ const Filter = ({ searchTerm, onSearchChange }) => {
   
   export default Filter;
   
+  
