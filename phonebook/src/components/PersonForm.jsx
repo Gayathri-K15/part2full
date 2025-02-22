@@ -1,20 +1,19 @@
-const PersonForm = ({ newName, newNumber, onNameChange, onNumberChange, onFormSubmit }) => {
+const PersonForm = ({ newName, setNewName, newNumber, setNewNumber, addPerson }) => {
   return (
-    <form onSubmit={onFormSubmit}>
+    <form onSubmit={addPerson}>
       <div>
-        name: <input value={newName} onChange={onNameChange} />
+        Name: <input value={newName} onChange={event => setNewName(event.target.value)} />
       </div>
       <div>
-        number: <input value={newNumber} onChange={onNumberChange} />
+        Number: <input value={newNumber} onChange={event => setNewNumber(event.target.value)} />
       </div>
-      <div>
-        <button type="submit">add</button>
-      </div>
+      <button type="submit">Add</button>
     </form>
-  );
-};
+  )
+}
 
-export default PersonForm;
+export default PersonForm
+
 
   
   

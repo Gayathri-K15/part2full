@@ -1,56 +1,151 @@
-import { useState } from 'react';
-import Filter from './components/Filter';
-import PersonForm from './components/PersonForm';
-import Persons from './components/Persons';
+import { useState, useEffect } from 'react';
+import personService from './services/phonebook.jsx';
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456' },
-    { name: 'Ada Lovelace', number: '39-44-5323523' },
-    { name: 'Dan Abramov', number: '12-43-234345' },
-    { name: 'Mary Poppendieck', number: '39-23-6423122' }
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [notification, setNotification] = useState(null); // For success notifications
+  const [errorMessage, setErrorMessage] = useState(null); // For error messages
 
-  const handleNameChange = (event) => setNewName(event.target.value);
-  const handleNumberChange = (event) => setNewNumber(event.target.value);
-  const handleSearchChange = (event) => setSearchTerm(event.target.value);
+  useEffect(() => {
+    personService.getAll().then((initialPersons) => {
+      setPersons(initialPersons);
+    });
+  }, []);
 
-  const handleFormSubmit = (event) => {
+  // Add a new person
+  const addPerson = (event) => {
     event.preventDefault();
-    if (persons.some((person) => person.name === newName)) {
-      alert(`${newName} is already added to phonebook`);
+    const personObject = {
+      name: newName,
+      number: newNumber,
+    };
+
+    // Check if person with the same name exists
+    const existingPerson = persons.find((person) => person.name === newName);
+    if (existingPerson) {
+      if (window.confirm(`${newName} is already in the phonebook, replace the old number?`)) {
+        updatePerson(existingPerson.id); // Update if confirmed
+      }
       return;
     }
-    const person = { name: newName, number: newNumber };
-    setPersons(persons.concat(person));
-    setNewName('');
-    setNewNumber('');
+
+    personService
+      .create(personObject)
+      .then((returnedPerson) => {
+        setPersons(persons.concat(returnedPerson));
+        setNewName('');
+        setNewNumber('');
+        setNotification(`Added ${returnedPerson.name}`); // Show success notification
+        setTimeout(() => {
+          setNotification(null); // Hide notification after 3 seconds
+        }, 3000);
+      })
+      .catch((error) => {
+        setErrorMessage('Failed to add person.');
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 5000);
+      });
   };
 
-  const filteredPersons = persons.filter((person) =>
-    person.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Update a person's number
+  const updatePerson = (id) => {
+    const person = persons.find((p) => p.id === id);
+    const updatedPerson = { ...person, number: newNumber };
+
+    personService
+      .update(id, updatedPerson)
+      .then((returnedPerson) => {
+        setPersons(persons.map((p) => (p.id === id ? returnedPerson : p)));
+        setNewNumber('');
+        setNotification(`Updated ${returnedPerson.name}'s number`); // Show success notification
+        setTimeout(() => {
+          setNotification(null); // Hide notification after 3 seconds
+        }, 3000);
+      })
+      .catch((error) => {
+        setErrorMessage('Failed to update person.');
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 5000);
+      });
+  };
+
+  // Delete a person
+  const deletePerson = (id) => {
+    const person = persons.find((p) => p.id === id);
+
+    if (window.confirm(`Delete ${person.name}?`)) {
+      personService
+        .remove(id)
+        .then(() => {
+          setPersons(persons.filter((p) => p.id !== id));
+          setNotification(`Deleted ${person.name}`); // Show success notification
+          setTimeout(() => {
+            setNotification(null); // Hide notification after 3 seconds
+          }, 3000);
+        })
+        .catch((error) => {
+          setErrorMessage(`Information of ${person.name} has already been removed from server`);
+          setTimeout(() => {
+            setErrorMessage(null);
+          }, 5000);
+        });
+    }
+  };
+
+  // Notification component
+  const Notification = ({ message, isError }) => {
+    if (message === null) {
+      return null;
+    }
+
+    return (
+      <div
+        style={{
+          color: isError ? 'red' : 'green',
+          backgroundColor: '#e0f7e0',
+          border: '1px solid green',
+          padding: '10px',
+          marginBottom: '10px',
+        }}
+      >
+        {message}
+      </div>
+    );
+  };
 
   return (
     <div>
       <h2>Phonebook</h2>
+      {/* Display Success and Error Notifications */}
+      <Notification message={notification} isError={false} />
+      <Notification message={errorMessage} isError={true} />
 
-      <Filter searchTerm={searchTerm} onSearchChange={handleSearchChange} />
+      {/* Add Person Form */}
+      <form onSubmit={addPerson}>
+        <div>
+          name: <input value={newName} onChange={(e) => setNewName(e.target.value)} />
+        </div>
+        <div>
+          number: <input value={newNumber} onChange={(e) => setNewNumber(e.target.value)} />
+        </div>
+        <button type="submit">add</button>
+      </form>
 
-      <h3>Add a new</h3>
-      <PersonForm
-        newName={newName}
-        newNumber={newNumber}
-        onNameChange={handleNameChange}
-        onNumberChange={handleNumberChange}
-        onFormSubmit={handleFormSubmit}
-      />
-
-      <h3>Numbers</h3>
-      <Persons persons={filteredPersons} />
+      <h2>Numbers</h2>
+      <ul>
+        {/* List all people in phonebook with delete and update functionality */}
+        {persons.map((person) => (
+          <li key={person.id}>
+            {person.name} {person.number}
+            <button onClick={() => updatePerson(person.id)}>update</button>
+            <button onClick={() => deletePerson(person.id)}>delete</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
