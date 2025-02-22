@@ -1,14 +1,10 @@
-import Person from './Person';
-
-const Persons = ({ persons, searchTerm }) => {
-  const filteredPersons = persons.filter(person =>
-    person.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+const Persons = ({ persons }) => {
   return (
     <ul>
-      {filteredPersons.map((person, index) => (
-        <Person key={index} person={person} />
+      {persons.map((person) => (
+        <li key={person.name}>
+          {person.name}: {person.number}
+        </li>
       ))}
     </ul>
   );
